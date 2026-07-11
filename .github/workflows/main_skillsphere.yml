@@ -10,22 +10,37 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v4
+    permissions:
+      contents: read
 
-      - uses: actions/setup-node@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
 
       - name: Install dependencies
         working-directory: ./backend
-        run: npm install
+        run: npm ci
 
-      - name: Upload backend
+      - name: Build project
+        working-directory: ./backend
+        run: npm run build --if-present
+
+      - name: Test project
+        working-directory: ./backend
+        run: npm test --if-present
+
+      - name: Upload backend artifact
         uses: actions/upload-artifact@v4
         with:
-          name: node-app
-          path: ./backend
+          name: backend-app
+          path: backend
 
   deploy:
     runs-on: ubuntu-latest
@@ -35,18 +50,26 @@ jobs:
       id-token: write
       contents: read
 
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: node-app
+    environment:
+      name: Production
+      url: ${{ steps.deploy.outputs.webapp-url }}
 
-      - uses: azure/login@v2
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-app
+          path: .
+
+      - name: Login to Azure
+        uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_FBC399F44A474AB8AF4E2000F4DF25A7 }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_2C7B599AD76C4999B0046DA21D1A78C3 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_C073A67D14254A519FD5B1BC34AE703B }}
 
-      - name: Deploy
+      - name: Deploy to Azure Web App
+        id: deploy
         uses: azure/webapps-deploy@v3
         with:
           app-name: SkillSphere
