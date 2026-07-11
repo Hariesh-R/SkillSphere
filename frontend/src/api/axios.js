@@ -7,7 +7,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "/api",
+  baseURL: "https://skillsphere-gha0csh9hddkhsg4.southindia-01.azurewebsites.net/api",
   withCredentials: false,
 });
 
