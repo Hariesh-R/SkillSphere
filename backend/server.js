@@ -96,6 +96,14 @@ app.use((req, res) => {
 
 // ─────────────────────────────────────────────────────────────────
 //  Global Error Handler
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+    message: "SkillSphere Backend API is running 🚀"
+  });
+});
+
+//  Express identifies this as an error handler because it has 4 params.
 //  Express identifies this as an error handler because it has 4 params.
 // ─────────────────────────────────────────────────────────────────
 // eslint-disable-next-line no-unused-vars
