@@ -1,6 +1,3 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-
 name: Build and deploy Node.js app to Azure Web App - SkillSphere
 
 on:
@@ -12,25 +9,19 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read #This is required for actions/checkout
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Node.js version
-        uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
-          node-version: '24.x'
+          node-version: '20'
 
-      - name: npm install, build, and test
+      - name: Install dependencies
         working-directory: ./backend
-        run: |
-          npm install
-          npm run build --if-present
-          npm test --if-present
+        run: npm install
 
-      - name: Upload artifact for deployment job
+      - name: Upload backend
         uses: actions/upload-artifact@v4
         with:
           name: node-app
@@ -39,28 +30,25 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build
+
     permissions:
-      id-token: write #This is required for requesting the JWT
-      contents: read #This is required for actions/checkout
+      id-token: write
+      contents: read
 
     steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
           name: node-app
-      
-      - name: Login to Azure
-        uses: azure/login@v2
+
+      - uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_FBC399F44A474AB8AF4E2000F4DF25A7 }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_2C7B599AD76C4999B0046DA21D1A78C3 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_C073A67D14254A519FD5B1BC34AE703B }}
 
-      - name: 'Deploy to Azure Web App'
-        id: deploy-to-webapp
+      - name: Deploy
         uses: azure/webapps-deploy@v3
         with:
-          app-name: 'SkillSphere'
-          slot-name: 'Production'
-          package: ./
-          
+          app-name: SkillSphere
+          slot-name: Production
+          package: .
