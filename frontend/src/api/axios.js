@@ -7,7 +7,8 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://skillsphere-gha0csh9hddkhsg4.southindia-01.azurewebsites.net/api",
+  // Using relative "/api" so production requests use the same origin via Nginx
+  baseURL: import.meta.env.VITE_API_URL || "/api",
   withCredentials: false,
 });
 
