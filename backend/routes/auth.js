@@ -247,11 +247,78 @@ router.post("/login", async (req, res, next) => {
  *   401 – Missing or invalid token (handled by authenticate middleware)
  */
 router.get("/me", authenticate(), (req, res) => {
-  // req.user is already populated (without password) by the middleware.
+  // Fetch fresh full user profile including portfolio items count
+  const fullUser = db.get("SELECT * FROM users WHERE id = ?", [req.user.id]);
   return res.status(200).json({
     success: true,
-    data: { user: req.user },
+    data: { user: sanitizeUser(fullUser) },
   });
+});
+
+/**
+ * Update the authenticated user's profile.
+ * PUT /api/auth/me
+ */
+router.put("/me", authenticate(), (req, res, next) => {
+  try {
+    const {
+      name,
+      bio,
+      skills,
+      expertise,
+      education,
+      github_url,
+      linkedin_url,
+      website_url,
+      avatar_url
+    } = req.body || {};
+
+    if (name !== undefined && (!name || typeof name !== "string" || name.trim().length < 2)) {
+      return res.status(400).json({ success: false, message: "Name must be at least 2 characters." });
+    }
+
+    const current = db.get("SELECT * FROM users WHERE id = ?", [req.user.id]);
+
+    const updatedName = name !== undefined ? name.trim() : current.name;
+    const updatedBio = bio !== undefined ? bio : current.bio;
+    const updatedSkills = skills !== undefined ? (Array.isArray(skills) ? JSON.stringify(skills) : skills) : current.skills;
+    const updatedExpertise = expertise !== undefined ? expertise : current.expertise;
+    const updatedEducation = education !== undefined ? education : current.education;
+    const updatedGithub = github_url !== undefined ? github_url : current.github_url;
+    const updatedLinkedin = linkedin_url !== undefined ? linkedin_url : current.linkedin_url;
+    const updatedWebsite = website_url !== undefined ? website_url : current.website_url;
+    const updatedAvatar = avatar_url !== undefined ? avatar_url : current.avatar_url;
+
+    db.run(
+      `UPDATE users
+       SET name = ?, bio = ?, skills = ?, expertise = ?, education = ?,
+           github_url = ?, linkedin_url = ?, website_url = ?, avatar_url = ?,
+           updated_at = datetime('now')
+       WHERE id = ?`,
+      [
+        updatedName,
+        updatedBio,
+        updatedSkills,
+        updatedExpertise,
+        updatedEducation,
+        updatedGithub,
+        updatedLinkedin,
+        updatedWebsite,
+        updatedAvatar,
+        req.user.id
+      ]
+    );
+
+    const user = db.get("SELECT * FROM users WHERE id = ?", [req.user.id]);
+
+    return res.status(200).json({
+      success: true,
+      message: "Profile updated successfully.",
+      data: { user: sanitizeUser(user) }
+    });
+  } catch (err) {
+    next(err);
+  }
 });
 
 module.exports = router;

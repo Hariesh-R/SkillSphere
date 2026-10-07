@@ -718,3 +718,141 @@ tr:hover td { background: var(--gray-50); }
   background: var(--brand-primary-light); color: var(--brand-primary);
   border-radius: var(--radius-full); padding: 4px 12px; font-size: 0.8rem; font-weight: 600;
 }
+
+/* ── Messaging Layout ─────────────────────────────────────── */
+.messaging-container {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  height: calc(100vh - var(--nav-height) - 40px);
+  background: #fff;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  border: 1px solid var(--gray-200);
+}
+@media (max-width: 768px) {
+  .messaging-container {
+    grid-template-columns: 1fr;
+  }
+}
+.conv-sidebar {
+  border-right: 1px solid var(--gray-200);
+  background: var(--gray-50);
+  display: flex;
+  flex-direction: column;
+}
+.conv-sidebar-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--gray-200);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+.conv-list {
+  flex: 1;
+  overflow-y: auto;
+}
+.conv-item {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--gray-100);
+  cursor: pointer;
+  transition: background var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.conv-item:hover, .conv-item.active {
+  background: var(--brand-primary-light);
+}
+.chat-pane {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #fff;
+}
+.chat-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--gray-200);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--gray-50);
+}
+.chat-messages {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: #fafafa;
+}
+.chat-bubble {
+  max-width: 70%;
+  padding: 10px 16px;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  word-break: break-word;
+}
+.chat-bubble.sent {
+  align-self: flex-end;
+  background: var(--brand-primary);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+.chat-bubble.received {
+  align-self: flex-start;
+  background: #fff;
+  color: var(--gray-800);
+  border: 1px solid var(--gray-200);
+  border-bottom-left-radius: 4px;
+  box-shadow: var(--shadow-xs);
+}
+.chat-input-row {
+  padding: 14px 20px;
+  border-top: 1px solid var(--gray-200);
+  display: flex;
+  gap: 10px;
+  background: #fff;
+}
+
+/* ── Notification Badge & Indicator ───────────────────────── */
+.nav-badge {
+  background: var(--brand-secondary);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: var(--radius-full);
+  margin-left: 4px;
+}
+.notif-card {
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--gray-200);
+  background: #fff;
+  margin-bottom: 12px;
+  transition: all var(--transition);
+}
+.notif-card.unread {
+  background: var(--brand-primary-light);
+  border-color: rgba(108,71,255,0.3);
+}
+
+/* ── Freelance & Team Cards ──────────────────────────────── */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+.tag {
+  display: inline-block;
+  background: var(--gray-100);
+  color: var(--gray-700);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+

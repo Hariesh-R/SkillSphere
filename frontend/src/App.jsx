@@ -13,10 +13,23 @@ import WorkshopDetails    from "./pages/WorkshopDetails";
 import Dashboard          from "./pages/Dashboard";
 import InstructorDashboard from "./pages/InstructorDashboard";
 import Profile            from "./pages/Profile";
-import NotFound           from "./pages/NotFound";
+import PublicProfile      from "./pages/PublicProfile";
 
-// Auth pages don't show the Navbar
-const AUTH_ROUTES = ["/login", "/register"];
+import FreelanceList        from "./pages/FreelanceList";
+import FreelanceDetails     from "./pages/FreelanceDetails";
+import PostFreelanceProject from "./pages/PostFreelanceProject";
+import ClientProjects       from "./pages/ClientProjects";
+import MyProposals          from "./pages/MyProposals";
+
+import MessagingInbox       from "./pages/MessagingInbox";
+import NotificationsPage    from "./pages/NotificationsPage";
+
+import TeamList             from "./pages/TeamList";
+import TeamDetails          from "./pages/TeamDetails";
+import PostTeamProject      from "./pages/PostTeamProject";
+import MyTeams              from "./pages/MyTeams";
+
+import NotFound             from "./pages/NotFound";
 
 export default function App() {
   return (
@@ -30,34 +43,61 @@ export default function App() {
         <Route path="/explore"       element={<Explore />} />
         <Route path="/workshops/:id" element={<WorkshopDetails />} />
 
-        {/* Student only */}
+        {/* Public Profiles */}
+        <Route path="/users/:id"     element={<PublicProfile />} />
+
+        {/* Freelance Marketplace */}
+        <Route path="/freelance"          element={<FreelanceList />} />
+        <Route path="/freelance/:id"      element={<FreelanceDetails />} />
+        <Route
+          path="/freelance/post"
+          element={<ProtectedRoute><PostFreelanceProject /></ProtectedRoute>}
+        />
+        <Route
+          path="/freelance/my-projects"
+          element={<ProtectedRoute><ClientProjects /></ProtectedRoute>}
+        />
+        <Route
+          path="/freelance/my-proposals"
+          element={<ProtectedRoute><MyProposals /></ProtectedRoute>}
+        />
+
+        {/* Messaging & Notifications */}
+        <Route
+          path="/messages"
+          element={<ProtectedRoute><MessagingInbox /></ProtectedRoute>}
+        />
+        <Route
+          path="/notifications"
+          element={<ProtectedRoute><NotificationsPage /></ProtectedRoute>}
+        />
+
+        {/* Team Finder */}
+        <Route path="/teams"          element={<TeamList />} />
+        <Route path="/teams/:id"      element={<TeamDetails />} />
+        <Route
+          path="/teams/post"
+          element={<ProtectedRoute><PostTeamProject /></ProtectedRoute>}
+        />
+        <Route
+          path="/teams/my-teams"
+          element={<ProtectedRoute><MyTeams /></ProtectedRoute>}
+        />
+
+        {/* Student & Instructor Dashboards */}
         <Route
           path="/student"
-          element={
-            <ProtectedRoute role="student">
-              <Dashboard />
-            </ProtectedRoute>
-          }
+          element={<ProtectedRoute role="student"><Dashboard /></ProtectedRoute>}
         />
-
-        {/* Instructor only */}
         <Route
           path="/instructor"
-          element={
-            <ProtectedRoute role="instructor">
-              <InstructorDashboard />
-            </ProtectedRoute>
-          }
+          element={<ProtectedRoute role="instructor"><InstructorDashboard /></ProtectedRoute>}
         />
 
-        {/* Any authenticated user */}
+        {/* Profile */}
         <Route
           path="/profile"
-          element={
-            <ProtectedRoute>
-              <Profile />
-            </ProtectedRoute>
-          }
+          element={<ProtectedRoute><Profile /></ProtectedRoute>}
         />
 
         {/* 404 */}

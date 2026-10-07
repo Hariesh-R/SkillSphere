@@ -2,13 +2,24 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useSocket } from "../context/SocketContext";
+import api from "../api/axios";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
+  const { unreadNotifCount, setUnreadNotifCount } = useSocket();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [dropOpen, setDropOpen] = useState(false);
   const dropRef = useRef(null);
+
+  // Fetch initial unread notifications count
+  useEffect(() => {
+    if (!user) return;
+    api.get("/notifications/unread-count")
+      .then(({ data }) => setUnreadNotifCount(data.data.unread_count))
+      .catch(() => {});
+  }, [user, setUnreadNotifCount]);
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -61,16 +72,41 @@ export default function Navbar() {
             className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}
             onClick={() => setMenuOpen(false)}
           >
-            Explore
+            Workshops
           </NavLink>
+          <NavLink
+            to="/freelance"
+            className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}
+            onClick={() => setMenuOpen(false)}
+          >
+            Freelance
+          </NavLink>
+          <NavLink
+            to="/teams"
+            className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}
+            onClick={() => setMenuOpen(false)}
+          >
+            Team Finder
+          </NavLink>
+
           {user && (
-            <NavLink
-              to={dashPath}
-              className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}
-              onClick={() => setMenuOpen(false)}
-            >
-              Dashboard
-            </NavLink>
+            <>
+              <NavLink
+                to="/messages"
+                className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}
+                onClick={() => setMenuOpen(false)}
+              >
+                Messages
+              </NavLink>
+              <NavLink
+                to="/notifications"
+                className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}
+                onClick={() => setMenuOpen(false)}
+              >
+                Notifications
+                {unreadNotifCount > 0 && <span className="nav-badge">{unreadNotifCount}</span>}
+              </NavLink>
+            </>
           )}
         </div>
 
@@ -102,10 +138,19 @@ export default function Navbar() {
                     <div className="user-dropdown-role">{user.role}</div>
                   </div>
                   <Link to={dashPath} onClick={() => setDropOpen(false)}>
-                    📊 Dashboard
+                    📊 Workshop Dashboard
+                  </Link>
+                  <Link to="/freelance/my-projects" onClick={() => setDropOpen(false)}>
+                    💼 My Freelance Projects
+                  </Link>
+                  <Link to="/freelance/my-proposals" onClick={() => setDropOpen(false)}>
+                    📄 My Proposals
+                  </Link>
+                  <Link to="/teams/my-teams" onClick={() => setDropOpen(false)}>
+                    🚀 My Teams
                   </Link>
                   <Link to="/profile" onClick={() => setDropOpen(false)}>
-                    👤 Profile
+                    👤 Profile & Portfolio
                   </Link>
                   <button className="logout-btn" onClick={handleLogout}>
                     🚪 Log Out
@@ -119,3 +164,4 @@ export default function Navbar() {
     </nav>
   );
 }
+
