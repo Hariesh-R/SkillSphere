@@ -370,6 +370,12 @@ export default function FreelanceDetails() {
                   View Client Profile 👤
                 </Link>
 
+                {user && !isClient && (
+                  <Link to={`/messages?userId=${project.client_id}`} className="btn btn-primary btn-sm btn-full" style={{ marginBottom: 12 }}>
+                    💬 Message Client
+                  </Link>
+                )}
+
                 {isClient && (
                   <Link to="/freelance/my-projects" className="btn btn-primary btn-sm btn-full">
                     Manage Proposals ({project.proposals_count})
