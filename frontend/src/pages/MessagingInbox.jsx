@@ -1,6 +1,17 @@
 // src/pages/MessagingInbox.jsx
 import { useState, useEffect, useRef } from "react";
 import { useSearchParams, Link } from "react-router-dom";
+import {
+  MessageSquare,
+  Send,
+  Search,
+  X,
+  PenSquare,
+  User,
+  ExternalLink,
+  Users,
+  Sparkles,
+} from "lucide-react";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import { useSocket } from "../context/SocketContext";
@@ -161,9 +172,12 @@ export default function MessagingInbox() {
         setTimeout(scrollToBottom, 100);
       }
       // Refresh conversation list to update last message preview
-      api.get("/messaging/conversations").then(({ data }) => {
-        setConversations(data.data.conversations || []);
-      }).catch(() => {});
+      api
+        .get("/messaging/conversations")
+        .then(({ data }) => {
+          setConversations(data.data.conversations || []);
+        })
+        .catch(() => {});
     };
 
     socket.on("new_message", handleNewMessage);
@@ -193,9 +207,12 @@ export default function MessagingInbox() {
       setTimeout(scrollToBottom, 100);
 
       // Refresh conversations list to update preview and last message timestamp
-      api.get("/messaging/conversations").then(({ data: cData }) => {
-        setConversations(cData.data.conversations || []);
-      }).catch(() => {});
+      api
+        .get("/messaging/conversations")
+        .then(({ data: cData }) => {
+          setConversations(cData.data.conversations || []);
+        })
+        .catch(() => {});
     } catch (err) {
       alert(err.response?.data?.message || "Failed to send message.");
     }
@@ -214,44 +231,56 @@ export default function MessagingInbox() {
   });
 
   return (
-    <div style={{ minHeight: "calc(100vh - var(--nav-height))", background: "var(--gray-50)", padding: "20px 0 40px" }}>
+    <div style={{ minHeight: "calc(100vh - var(--nav-height))", background: "var(--gray-50)", padding: "24px 0 40px" }}>
       <div className="container">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-          <h1 className="page-title" style={{ fontSize: "1.5rem", margin: 0 }}>
-            Messages & Communications
-          </h1>
+          <div>
+            <h1 className="page-title" style={{ fontSize: "1.6rem", margin: 0 }}>
+              Messages & Conversations
+            </h1>
+            <p className="page-subtitle" style={{ fontSize: "0.875rem", margin: "2px 0 0" }}>
+              Real-time communication with mentors, peers, and clients
+            </p>
+          </div>
+
           <button
             id="btn-new-chat-top"
-            className="btn btn-primary"
-            onClick={() => { setShowNewChatModal(true); setUserSearch(""); }}
-            style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "8px 18px", fontSize: "0.9rem" }}
+            className="btn btn-primary flex gap-2"
+            onClick={() => {
+              setShowNewChatModal(true);
+              setUserSearch("");
+            }}
           >
-            <span>✏️</span> New Chat
+            <PenSquare size={16} />
+            <span>New Chat</span>
           </button>
         </div>
 
         <div className="messaging-container">
           {/* Sidebar */}
           <div className="conv-sidebar">
-            <div className="conv-sidebar-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div>
+            <div className="conv-sidebar-header">
+              <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--gray-900)" }}>
                 <span>Conversations</span>
-                <span style={{ fontSize: "0.8rem", color: "var(--gray-500)", marginLeft: 6, fontWeight: 500 }}>
+                <span style={{ fontSize: "0.8rem", color: "var(--gray-400)", marginLeft: 6, fontWeight: 500 }}>
                   ({conversations.length})
                 </span>
               </div>
               <button
                 id="btn-sidebar-new-chat"
-                className="btn btn-primary btn-sm"
-                onClick={() => { setShowNewChatModal(true); setUserSearch(""); }}
-                style={{ padding: "4px 10px", fontSize: "0.78rem", borderRadius: "var(--radius-full)" }}
+                className="btn btn-outline btn-xs flex gap-1"
+                onClick={() => {
+                  setShowNewChatModal(true);
+                  setUserSearch("");
+                }}
               >
-                + New
+                <PenSquare size={12} />
+                New
               </button>
             </div>
 
             {/* Search filter in sidebar */}
-            <div style={{ padding: "10px 14px", borderBottom: "1px solid var(--gray-200)", background: "#fff" }}>
+            <div style={{ padding: "12px 16px", borderBottom: "1px solid var(--gray-200)", background: "#ffffff" }}>
               <div style={{ position: "relative" }}>
                 <input
                   type="text"
@@ -259,17 +288,23 @@ export default function MessagingInbox() {
                   placeholder="Search chats..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  style={{ padding: "6px 12px 6px 32px", fontSize: "0.85rem", height: 36, borderRadius: "var(--radius-full)" }}
+                  style={{ padding: "7px 12px 7px 34px", fontSize: "0.85rem", height: 36, borderRadius: "var(--radius-full)" }}
                 />
-                <span style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", fontSize: "0.8rem", opacity: 0.5 }}>
-                  🔍
+                <span style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", color: "var(--gray-400)" }}>
+                  <Search size={14} />
                 </span>
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery("")}
-                    style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "var(--gray-400)", fontSize: "0.8rem" }}
+                    style={{
+                      position: "absolute",
+                      right: 10,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      color: "var(--gray-400)",
+                    }}
                   >
-                    ✕
+                    <X size={14} />
                   </button>
                 )}
               </div>
@@ -278,30 +313,48 @@ export default function MessagingInbox() {
             {/* Conversation List */}
             <div className="conv-list">
               {loadingConv ? (
-                <div style={{ padding: 24, textAlign: "center", color: "var(--gray-500)" }}>
-                  Loading chats...
+                <div style={{ padding: 24, textAlign: "center", color: "var(--gray-500)", fontSize: "0.875rem" }}>
+                  Loading conversations…
                 </div>
               ) : conversations.length === 0 ? (
-                <div style={{ padding: "36px 20px", textAlign: "center" }}>
-                  <div style={{ fontSize: "2.2rem", marginBottom: 12 }}>💬</div>
-                  <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--gray-800)" }}>
-                    No active conversations yet
+                <div style={{ padding: "40px 20px", textAlign: "center" }}>
+                  <div
+                    style={{
+                      width: 44,
+                      height: 44,
+                      borderRadius: "50%",
+                      background: "var(--brand-primary-light)",
+                      color: "var(--brand-primary)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      margin: "0 auto 12px",
+                    }}
+                  >
+                    <MessageSquare size={20} />
                   </div>
-                  <p style={{ fontSize: "0.8rem", color: "var(--gray-500)", marginTop: 6, marginBottom: 18, lineHeight: 1.5 }}>
+                  <div style={{ fontWeight: 700, fontSize: "0.95rem", color: "var(--gray-800)" }}>
+                    No active chats yet
+                  </div>
+                  <p style={{ fontSize: "0.8rem", color: "var(--gray-500)", marginTop: 4, marginBottom: 16, lineHeight: 1.5 }}>
                     Connect and chat with workshop mentors, student peers, or freelance clients.
                   </p>
                   <button
                     id="btn-sidebar-start-chat-empty"
-                    className="btn btn-primary btn-sm"
-                    onClick={() => { setShowNewChatModal(true); setUserSearch(""); }}
-                    style={{ borderRadius: "var(--radius-full)", padding: "8px 16px" }}
+                    className="btn btn-primary btn-sm flex gap-1"
+                    onClick={() => {
+                      setShowNewChatModal(true);
+                      setUserSearch("");
+                    }}
+                    style={{ margin: "0 auto" }}
                   >
-                    + Start a Conversation
+                    <PenSquare size={13} />
+                    Start a Chat
                   </button>
                 </div>
               ) : filteredConversations.length === 0 ? (
                 <div style={{ padding: 24, textAlign: "center", color: "var(--gray-500)", fontSize: "0.85rem" }}>
-                  No conversations match "{searchQuery}".
+                  No chats match "{searchQuery}".
                 </div>
               ) : (
                 filteredConversations.map((conv) => {
@@ -318,12 +371,21 @@ export default function MessagingInbox() {
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                          <strong style={{ fontSize: "0.9rem", color: "var(--gray-900)" }}>
+                          <strong style={{ fontSize: "0.875rem", color: "var(--gray-900)" }}>
                             {other.name}
                           </strong>
                           {conv.unread_count > 0 && <span className="nav-badge">{conv.unread_count}</span>}
                         </div>
-                        <div style={{ fontSize: "0.8rem", color: "var(--gray-500)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginTop: 2 }}>
+                        <div
+                          style={{
+                            fontSize: "0.8rem",
+                            color: "var(--gray-500)",
+                            whiteSpace: "nowrap",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            marginTop: 2,
+                          }}
+                        >
                           {conv.last_message || conv.title || "No messages yet"}
                         </div>
                       </div>
@@ -345,10 +407,16 @@ export default function MessagingInbox() {
                     </div>
                     <div>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <strong style={{ fontSize: "1rem" }}>{getOtherParticipant(activeConv).name}</strong>
+                        <strong style={{ fontSize: "0.95rem", color: "var(--gray-900)" }}>
+                          {getOtherParticipant(activeConv).name}
+                        </strong>
                         {getOtherParticipant(activeConv).role && (
                           <span
-                            className={`badge ${getOtherParticipant(activeConv).role === "instructor" ? "badge-primary" : "badge-secondary"}`}
+                            className={`badge ${
+                              getOtherParticipant(activeConv).role === "instructor"
+                                ? "badge-primary"
+                                : "badge-secondary"
+                            }`}
                             style={{ fontSize: "0.68rem", padding: "1px 6px" }}
                           >
                             {getOtherParticipant(activeConv).role}
@@ -356,7 +424,7 @@ export default function MessagingInbox() {
                         )}
                       </div>
                       <div style={{ fontSize: "0.75rem", color: "var(--gray-500)" }}>
-                        {activeConv.type === "direct" ? "Direct Message" : activeConv.title || "Project Conversation"}
+                        {activeConv.type === "direct" ? "Direct Conversation" : activeConv.title || "Project Conversation"}
                       </div>
                     </div>
                   </div>
@@ -364,27 +432,41 @@ export default function MessagingInbox() {
                   {getOtherParticipant(activeConv).id && (
                     <Link
                       to={`/users/${getOtherParticipant(activeConv).id}`}
-                      className="btn btn-outline btn-sm"
-                      style={{ fontSize: "0.78rem", padding: "4px 12px" }}
+                      className="btn btn-outline btn-sm flex gap-1"
                     >
-                      View Profile 👤
+                      <User size={13} />
+                      View Profile
                     </Link>
                   )}
                 </div>
 
                 <div className="chat-messages">
                   {loadingMsg ? (
-                    <div style={{ textAlign: "center", padding: 24, color: "var(--gray-500)" }}>
-                      Loading message history...
+                    <div style={{ textAlign: "center", padding: 24, color: "var(--gray-500)", fontSize: "0.875rem" }}>
+                      Loading message history…
                     </div>
                   ) : messages.length === 0 ? (
                     <div style={{ textAlign: "center", padding: "48px 20px", color: "var(--gray-400)" }}>
-                      <div style={{ fontSize: "2rem", marginBottom: 8 }}>👋</div>
-                      <strong style={{ display: "block", color: "var(--gray-700)", marginBottom: 4 }}>
+                      <div
+                        style={{
+                          width: 48,
+                          height: 48,
+                          borderRadius: "50%",
+                          background: "var(--brand-primary-light)",
+                          color: "var(--brand-primary)",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          margin: "0 auto 12px",
+                        }}
+                      >
+                        <MessageSquare size={22} />
+                      </div>
+                      <strong style={{ display: "block", color: "var(--gray-800)", marginBottom: 4 }}>
                         Say hello to {getOtherParticipant(activeConv).name}!
                       </strong>
                       <span style={{ fontSize: "0.85rem" }}>
-                        Type a message below to start this conversation.
+                        Send your first message below to collaborate.
                       </span>
                     </div>
                   ) : (
@@ -393,12 +475,19 @@ export default function MessagingInbox() {
                       return (
                         <div key={m.id} className={`chat-bubble ${isMe ? "sent" : "received"}`}>
                           {!isMe && (
-                            <div style={{ fontSize: "0.75rem", fontWeight: 700, marginBottom: 2 }}>
+                            <div style={{ fontSize: "0.75rem", fontWeight: 700, marginBottom: 2, color: "var(--brand-primary)" }}>
                               {m.sender_name}
                             </div>
                           )}
                           <div>{m.text}</div>
-                          <div style={{ fontSize: "0.65rem", opacity: 0.75, textAlign: "right", marginTop: 4 }}>
+                          <div
+                            style={{
+                              fontSize: "0.68rem",
+                              opacity: isMe ? 0.8 : 0.6,
+                              textAlign: "right",
+                              marginTop: 4,
+                            }}
+                          >
                             {m.created_at
                               ? new Date(m.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
                               : ""}
@@ -414,32 +503,51 @@ export default function MessagingInbox() {
                   <input
                     ref={inputRef}
                     className="form-input"
-                    placeholder={`Message ${getOtherParticipant(activeConv).name}...`}
+                    placeholder={`Write a message to ${getOtherParticipant(activeConv).name}...`}
                     value={text}
                     onChange={(e) => setText(e.target.value)}
                     style={{ borderRadius: "var(--radius-full)" }}
                   />
-                  <button type="submit" className="btn btn-primary" style={{ borderRadius: "var(--radius-full)", padding: "0 22px" }}>
-                    Send 🚀
+                  <button type="submit" className="btn btn-primary flex gap-2" style={{ borderRadius: "var(--radius-full)", padding: "0 20px" }}>
+                    <Send size={15} />
+                    <span>Send</span>
                   </button>
                 </form>
               </>
             ) : (
               <div className="chat-empty-hero">
-                <div className="chat-empty-icon">💬</div>
-                <h2 style={{ fontSize: "1.4rem", fontWeight: 800, color: "var(--gray-900)", marginBottom: 8, fontFamily: "var(--font-display)" }}>
-                  SkillSphere Messages & Chat
+                <div
+                  style={{
+                    width: 60,
+                    height: 60,
+                    borderRadius: "50%",
+                    background: "var(--brand-primary-light)",
+                    color: "var(--brand-primary)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: 16,
+                  }}
+                >
+                  <MessageSquare size={28} />
+                </div>
+                <h2 style={{ fontSize: "1.4rem", fontWeight: 800, color: "var(--gray-900)", marginBottom: 8 }}>
+                  Direct Messages & Channels
                 </h2>
                 <p style={{ color: "var(--gray-500)", maxWidth: 440, fontSize: "0.92rem", lineHeight: 1.6, marginBottom: 24 }}>
-                  Connect and collaborate directly with workshop mentors, project partners, and freelance clients across our community.
+                  Connect with workshop mentors, project teammates, and freelance clients across our community.
                 </p>
                 <button
                   id="btn-start-chat-main-pane"
-                  className="btn btn-primary btn-lg"
-                  onClick={() => { setShowNewChatModal(true); setUserSearch(""); }}
-                  style={{ display: "inline-flex", alignItems: "center", gap: 8, borderRadius: "var(--radius-full)", padding: "12px 28px" }}
+                  className="btn btn-primary btn-lg flex gap-2"
+                  onClick={() => {
+                    setShowNewChatModal(true);
+                    setUserSearch("");
+                  }}
+                  style={{ borderRadius: "var(--radius-full)" }}
                 >
-                  <span>✏️</span> Start a Conversation
+                  <PenSquare size={16} />
+                  Start a Conversation
                 </button>
               </div>
             )}
@@ -453,7 +561,9 @@ export default function MessagingInbox() {
           <div className="modal" style={{ maxWidth: 540 }}>
             <div className="modal-header">
               <div className="modal-title">Start a Conversation</div>
-              <button className="modal-close" onClick={() => setShowNewChatModal(false)}>✕</button>
+              <button className="modal-close" onClick={() => setShowNewChatModal(false)}>
+                <X size={18} />
+              </button>
             </div>
 
             <div className="modal-body" style={{ padding: 22 }}>
@@ -469,15 +579,21 @@ export default function MessagingInbox() {
                   autoFocus
                   style={{ paddingLeft: 38, height: 44, borderRadius: "var(--radius-full)" }}
                 />
-                <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", fontSize: "0.95rem", opacity: 0.5 }}>
-                  🔍
+                <span style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "var(--gray-400)" }}>
+                  <Search size={16} />
                 </span>
                 {userSearch && (
                   <button
                     onClick={() => setUserSearch("")}
-                    style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", border: "none", background: "none", cursor: "pointer", color: "var(--gray-400)", fontSize: "0.9rem" }}
+                    style={{
+                      position: "absolute",
+                      right: 12,
+                      top: "50%",
+                      transform: "translateY(-50%)",
+                      color: "var(--gray-400)",
+                    }}
                   >
-                    ✕
+                    <X size={16} />
                   </button>
                 )}
               </div>
@@ -485,11 +601,11 @@ export default function MessagingInbox() {
               {/* Members List */}
               <div style={{ maxHeight: 360, overflowY: "auto", display: "flex", flexDirection: "column", gap: 8, paddingRight: 4 }}>
                 {loadingUsers ? (
-                  <div style={{ textAlign: "center", padding: 36, color: "var(--gray-500)" }}>
-                    Searching members...
+                  <div style={{ textAlign: "center", padding: 36, color: "var(--gray-500)", fontSize: "0.875rem" }}>
+                    Searching members…
                   </div>
                 ) : userList.length === 0 ? (
-                  <div style={{ textAlign: "center", padding: 36, color: "var(--gray-400)" }}>
+                  <div style={{ textAlign: "center", padding: 36, color: "var(--gray-400)", fontSize: "0.875rem" }}>
                     No members found{userSearch ? ` matching "${userSearch}"` : ""}.
                   </div>
                 ) : (
@@ -497,9 +613,10 @@ export default function MessagingInbox() {
                     let skillsArray = [];
                     if (u.skills) {
                       try {
-                        skillsArray = typeof u.skills === "string" && u.skills.startsWith("[")
-                          ? JSON.parse(u.skills)
-                          : u.skills.split(",");
+                        skillsArray =
+                          typeof u.skills === "string" && u.skills.startsWith("[")
+                            ? JSON.parse(u.skills)
+                            : u.skills.split(",");
                       } catch {
                         skillsArray = [u.skills];
                       }
@@ -508,14 +625,15 @@ export default function MessagingInbox() {
                     return (
                       <div
                         key={u.id}
-                        className="user-search-item"
+                        className="card"
                         style={{
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "space-between",
                           padding: "12px 14px",
                           borderRadius: "var(--radius-md)",
-                          background: "#fff",
+                          background: "#ffffff",
+                          border: "1px solid var(--gray-200)",
                         }}
                       >
                         <div style={{ display: "flex", alignItems: "center", gap: 12, minWidth: 0, flex: 1 }}>
@@ -532,7 +650,16 @@ export default function MessagingInbox() {
                                 {u.role}
                               </span>
                             </div>
-                            <div style={{ fontSize: "0.78rem", color: "var(--gray-500)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", marginTop: 2 }}>
+                            <div
+                              style={{
+                                fontSize: "0.78rem",
+                                color: "var(--gray-500)",
+                                whiteSpace: "nowrap",
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                marginTop: 2,
+                              }}
+                            >
                               {u.expertise || u.bio || u.email}
                             </div>
                             {skillsArray.length > 0 && (
@@ -548,12 +675,13 @@ export default function MessagingInbox() {
                         </div>
 
                         <button
-                          className="btn btn-primary btn-sm"
+                          className="btn btn-primary btn-sm flex gap-1"
                           disabled={startingChatUserId === u.id}
                           onClick={() => handleStartDirectChat(u.id)}
-                          style={{ flexShrink: 0, marginLeft: 12, padding: "6px 14px", borderRadius: "var(--radius-full)" }}
+                          style={{ flexShrink: 0, marginLeft: 12, borderRadius: "var(--radius-full)" }}
                         >
-                          {startingChatUserId === u.id ? "Connecting..." : "Chat 💬"}
+                          <MessageSquare size={13} />
+                          {startingChatUserId === u.id ? "Connecting…" : "Chat"}
                         </button>
                       </div>
                     );

@@ -1,91 +1,128 @@
 // src/components/WorkshopCard.jsx
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
-const CATEGORY_EMOJIS = {
-  Programming: "💻", Design: "🎨", Business: "💼", Marketing: "📣",
-  Music: "🎵", Photography: "📷", Health: "🏃", Cooking: "🍳",
-  Language: "🌍", Finance: "💰", Science: "🔬", Art: "🖌️",
-};
-
-function Stars({ rating }) {
-  const r = Math.round(rating || 0);
-  return (
-    <div className="stars">
-      {[1, 2, 3, 4, 5].map((n) => (
-        <span key={n} className={`star${n <= r ? " filled" : ""}`}>★</span>
-      ))}
-    </div>
-  );
-}
+import { Star, Globe, MapPin, User, Users } from "lucide-react";
+import { getWorkshopImage } from "../utils/categoryImages";
 
 export default function WorkshopCard({ workshop }) {
   const navigate = useNavigate();
 
   const {
-    id, title, category, mode, price,
-    instructor_name, avg_rating, review_count,
-    remaining_seats, image_url, capacity,
+    id,
+    title,
+    category,
+    mode,
+    price,
+    instructor_name,
+    avg_rating,
+    review_count,
+    remaining_seats,
+    image_url,
+    capacity,
   } = workshop;
 
-  const emoji = CATEGORY_EMOJIS[category] || "📚";
-  const isFree = price === 0;
+  const fallbackUrl = getWorkshopImage(category, image_url);
+  const [imgSrc, setImgSrc] = useState(fallbackUrl);
+
+  const isFree = price === 0 || price === "0";
   const isFull = remaining_seats === 0;
   const isLow = remaining_seats > 0 && remaining_seats <= 5;
 
   return (
-    <div className="card workshop-card" onClick={() => navigate(`/workshops/${id}`)}>
-      {image_url ? (
-        <img src={image_url} alt={title} className="workshop-card-img" />
-      ) : (
-        <div
-          className="workshop-card-img-placeholder"
-          style={{
-            background: `linear-gradient(135deg, hsl(${(title.charCodeAt(0) * 7) % 360},70%,50%), hsl(${(title.charCodeAt(0) * 13) % 360},80%,40%))`,
+    <article
+      className="card card-hoverable workshop-card"
+      onClick={() => navigate(`/workshops/${id}`)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          navigate(`/workshops/${id}`);
+        }
+      }}
+      aria-label={`Workshop: ${title} by ${instructor_name || "Instructor"}`}
+    >
+      <div className="workshop-card-img-wrap">
+        <img
+          src={imgSrc}
+          alt={title}
+          className="workshop-card-img"
+          loading="lazy"
+          onError={() => {
+            // If primary image fails, fall back to curated category photography
+            const secondaryFallback = getWorkshopImage(category);
+            if (imgSrc !== secondaryFallback) {
+              setImgSrc(secondaryFallback);
+            }
           }}
-        >
-          {emoji}
+        />
+        <div className="workshop-card-category-badge">{category}</div>
+        <div className="workshop-card-mode-badge">
+          {mode === "online" ? (
+            <>
+              <Globe size={13} color="var(--brand-primary)" strokeWidth={2.2} />
+              <span>Online</span>
+            </>
+          ) : (
+            <>
+              <MapPin size={13} color="var(--brand-violet)" strokeWidth={2.2} />
+              <span>In Person</span>
+            </>
+          )}
         </div>
-      )}
+      </div>
+
       <div className="workshop-card-body">
-        <div className="workshop-card-category">{category}</div>
-        <div className="workshop-card-title">{title}</div>
-        <div className="workshop-card-instructor">by {instructor_name || "Instructor"}</div>
+        <h3 className="workshop-card-title">{title}</h3>
+
+        <div className="workshop-card-instructor">
+          <User size={14} color="var(--gray-400)" />
+          <span>{instructor_name || "Community Instructor"}</span>
+        </div>
 
         {avg_rating != null && (
           <div className="workshop-card-rating">
-            <Stars rating={avg_rating} />
-            <span style={{ fontWeight: 700, color: "#f59e0b" }}>{avg_rating?.toFixed(1)}</span>
-            <span style={{ color: "var(--gray-400)" }}>({review_count})</span>
+            <div className="flex gap-1" style={{ alignItems: "center" }}>
+              {[1, 2, 3, 4, 5].map((starIdx) => (
+                <Star
+                  key={starIdx}
+                  size={14}
+                  fill={starIdx <= Math.round(avg_rating) ? "#f59e0b" : "none"}
+                  color={starIdx <= Math.round(avg_rating) ? "#f59e0b" : "var(--gray-300)"}
+                  strokeWidth={1.8}
+                />
+              ))}
+            </div>
+            <span style={{ fontWeight: 700, color: "var(--gray-900)" }}>
+              {Number(avg_rating).toFixed(1)}
+            </span>
+            <span style={{ color: "var(--gray-400)", fontSize: "0.8rem" }}>
+              ({review_count || 0})
+            </span>
           </div>
         )}
 
         <div className="workshop-card-meta">
-          <div className={`workshop-card-price${isFree ? " workshop-card-price-free" : ""}`}>
-            {isFree ? "Free" : `₹${price}`}
+          <div>
+            <div className={`workshop-card-price${isFree ? " workshop-card-price-free" : ""}`}>
+              {isFree ? "Free" : `₹${Number(price).toLocaleString()}`}
+            </div>
           </div>
-          <div className="flex gap-2" style={{ alignItems: "center" }}>
-            <span className={`badge ${mode === "online" ? "badge-primary" : "badge-gray"}`}>
-              {mode === "online" ? "🌐 Online" : "📍 Offline"}
-            </span>
+
+          <div>
             {isFull ? (
-              <span className="workshop-card-seats low">Full</span>
+              <span className="badge badge-danger">Sold Out</span>
             ) : isLow ? (
-              <span className="workshop-card-seats low">{remaining_seats} left</span>
+              <span className="badge badge-warning">{remaining_seats} seats left</span>
             ) : (
-              <span className="workshop-card-seats">{remaining_seats}/{capacity} seats</span>
+              <span className="badge badge-gray flex gap-1">
+                <Users size={12} />
+                {remaining_seats}/{capacity} seats
+              </span>
             )}
           </div>
         </div>
-
-        <div style={{ marginTop: 16 }}>
-          <button className="btn btn-outline btn-full btn-sm" onClick={(e) => {
-            e.stopPropagation();
-            navigate(`/workshops/${id}`);
-          }}>
-            View Details
-          </button>
-        </div>
       </div>
-    </div>
+    </article>
   );
 }

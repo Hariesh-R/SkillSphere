@@ -1,38 +1,41 @@
-// src/pages/WorkshopDetail.jsx
+// src/pages/WorkshopDetails.jsx
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
+import {
+  Star,
+  Globe,
+  MapPin,
+  Calendar,
+  Users,
+  Video,
+  ExternalLink,
+  MessageSquare,
+  ShieldCheck,
+  CheckCircle2,
+} from "lucide-react";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import StarPicker from "../components/StarPicker";
-
-function Stars({ rating }) {
-  const r = Math.round(rating || 0);
-  return (
-    <span className="stars">
-      {[1,2,3,4,5].map((n) => (
-        <span key={n} className={`star${n <= r ? " filled" : ""}`}>★</span>
-      ))}
-    </span>
-  );
-}
+import Footer from "../components/Footer";
+import { getWorkshopImage } from "../utils/categoryImages";
 
 export default function WorkshopDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const [workshop,  setWorkshop]  = useState(null);
-  const [reviews,   setReviews]   = useState([]);
-  const [loading,   setLoading]   = useState(true);
-  const [booking,   setBooking]   = useState(false);
-  const [bookMsg,   setBookMsg]   = useState({ type: "", text: "" });
-  const [booked,    setBooked]    = useState(false);
+  const [workshop, setWorkshop] = useState(null);
+  const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [booking, setBooking] = useState(false);
+  const [bookMsg, setBookMsg] = useState({ type: "", text: "" });
+  const [booked, setBooked] = useState(false);
 
   // Review form
-  const [rating,    setRating]    = useState(5);
-  const [comment,   setComment]   = useState("");
-  const [revLoading,setRevLoading]= useState(false);
-  const [revMsg,    setRevMsg]    = useState({ type: "", text: "" });
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const [revLoading, setRevLoading] = useState(false);
+  const [revMsg, setRevMsg] = useState({ type: "", text: "" });
 
   useEffect(() => {
     const load = async () => {
@@ -54,7 +57,9 @@ export default function WorkshopDetails() {
               (b) => b.workshop?.id === id && b.status !== "cancelled"
             );
             setBooked(alreadyBooked);
-          } catch { /* not logged in */ }
+          } catch {
+            // not logged in
+          }
         }
       } catch {
         navigate("/404");
@@ -66,14 +71,20 @@ export default function WorkshopDetails() {
   }, [id, user, navigate]);
 
   const handleBook = async () => {
-    if (!user) { navigate("/login", { state: { from: { pathname: `/workshops/${id}` } } }); return; }
-    if (user.role !== "student") { setBookMsg({ type: "error", text: "Only students can book workshops." }); return; }
+    if (!user) {
+      navigate("/login", { state: { from: { pathname: `/workshops/${id}` } } });
+      return;
+    }
+    if (user.role !== "student") {
+      setBookMsg({ type: "error", text: "Only student accounts can book workshops." });
+      return;
+    }
     setBooking(true);
     setBookMsg({ type: "", text: "" });
     try {
       await api.post("/bookings", { workshop_id: id });
       setBooked(true);
-      setBookMsg({ type: "success", text: "🎉 Booking confirmed! Check your dashboard." });
+      setBookMsg({ type: "success", text: "Booking confirmed! You are registered for this workshop." });
       // Refresh remaining seats
       const { data } = await api.get(`/workshops/${id}`);
       setWorkshop(data.data);
@@ -90,7 +101,7 @@ export default function WorkshopDetails() {
     setRevLoading(true);
     try {
       await api.post(`/workshops/${id}/reviews`, { rating, comment });
-      setRevMsg({ type: "success", text: "✅ Review submitted!" });
+      setRevMsg({ type: "success", text: "Review submitted successfully!" });
       setComment("");
       // Reload reviews
       const { data } = await api.get(`/workshops/${id}/reviews`);
@@ -104,234 +115,410 @@ export default function WorkshopDetails() {
     }
   };
 
-  if (loading) return <div className="spinner-wrap" style={{ minHeight: "60vh" }}><div className="spinner" /></div>;
+  if (loading) {
+    return (
+      <div className="spinner-wrap" style={{ minHeight: "60vh" }}>
+        <div className="spinner" />
+      </div>
+    );
+  }
+
   if (!workshop) return null;
 
   const {
-    title, description, category, mode, price, capacity, remaining_seats,
-    schedule, meet_link, image_url, avg_rating, review_count,
-    instructor_name, instructor_email, instructor_bio, status,
+    title,
+    description,
+    category,
+    mode,
+    price,
+    capacity,
+    remaining_seats,
+    schedule,
+    meet_link,
+    image_url,
+    avg_rating,
+    review_count,
+    instructor_id,
+    instructor_name,
+    instructor_email,
+    instructor_bio,
+    status,
   } = workshop;
 
   const isFull = remaining_seats === 0;
-  const isFree = price === 0;
+  const isFree = price === 0 || price === "0";
+  const heroImg = getWorkshopImage(category, image_url);
 
   return (
-    <div style={{ background: "var(--gray-50)", minHeight: "calc(100vh - var(--nav-height))" }}>
-      <div className="container" style={{ paddingTop: 40, paddingBottom: 80 }}>
+    <>
+      <div style={{ background: "var(--gray-50)", minHeight: "calc(100vh - var(--nav-height))" }}>
+        <div className="container" style={{ paddingTop: 32, paddingBottom: 80 }}>
+          {/* Breadcrumb Navigation */}
+          <nav aria-label="Breadcrumb" style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "0.85rem", color: "var(--gray-500)", marginBottom: 24 }}>
+            <Link to="/" style={{ color: "var(--brand-primary)", fontWeight: 500 }}>
+              Home
+            </Link>
+            <span>/</span>
+            <Link to="/explore" style={{ color: "var(--brand-primary)", fontWeight: 500 }}>
+              Explore
+            </Link>
+            <span>/</span>
+            <span style={{ color: "var(--gray-700)", fontWeight: 600 }}>{title}</span>
+          </nav>
 
-        {/* Breadcrumb */}
-        <div style={{ fontSize: "0.8rem", color: "var(--gray-500)", marginBottom: 24 }}>
-          <Link to="/" style={{ color: "var(--brand-primary)" }}>Home</Link>
-          {" / "}
-          <Link to="/explore" style={{ color: "var(--brand-primary)" }}>Explore</Link>
-          {" / "}
-          {title}
-        </div>
+          <div className="workshop-detail-layout">
+            {/* ── Main Workshop Details ───────────────── */}
+            <main>
+              {/* Product Hero Image */}
+              <div style={{ position: "relative", marginBottom: 24 }}>
+                <img
+                  src={heroImg}
+                  alt={title}
+                  className="workshop-hero-img"
+                  onError={(e) => {
+                    const fallback = getWorkshopImage(category);
+                    if (e.target.src !== fallback) e.target.src = fallback;
+                  }}
+                />
+              </div>
 
-        <div className="workshop-detail-layout">
-          {/* ── Main Content ──────────────────────────── */}
-          <div>
-            {/* Hero Image */}
-            {image_url ? (
-              <img src={image_url} alt={title} className="workshop-hero-img" />
-            ) : (
-              <div
-                className="workshop-hero-placeholder"
-                style={{ background: `linear-gradient(135deg, hsl(${title.charCodeAt(0)*7%360},70%,45%), hsl(${title.charCodeAt(0)*13%360},80%,35%))` }}
+              {/* Category & Status Pills */}
+              <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 16 }}>
+                <span className="badge badge-primary">{category}</span>
+                <span className={`badge ${mode === "online" ? "badge-primary" : "badge-gray"} flex gap-1`}>
+                  {mode === "online" ? (
+                    <>
+                      <Globe size={13} />
+                      Online Live Stream
+                    </>
+                  ) : (
+                    <>
+                      <MapPin size={13} />
+                      In-Person Classroom
+                    </>
+                  )}
+                </span>
+                {status && status !== "published" && (
+                  <span className="badge badge-warning">{status}</span>
+                )}
+              </div>
+
+              {/* Title */}
+              <h1
+                style={{
+                  fontFamily: "var(--font-display)",
+                  fontSize: "2.1rem",
+                  fontWeight: 800,
+                  color: "var(--gray-900)",
+                  letterSpacing: "-0.03em",
+                  marginBottom: 14,
+                  lineHeight: 1.25,
+                }}
               >
-                📚
-              </div>
-            )}
+                {title}
+              </h1>
 
-            {/* Badges */}
-            <div style={{ display:"flex", gap:10, flexWrap:"wrap", marginTop:24, marginBottom:16 }}>
-              <span className="badge badge-primary">{category}</span>
-              <span className={`badge ${mode==="online"?"badge-primary":"badge-gray"}`}>
-                {mode==="online" ? "🌐 Online" : "📍 Offline"}
-              </span>
-              {status !== "published" && (
-                <span className="badge badge-warning">{status}</span>
-              )}
-            </div>
-
-            <h1 style={{ fontFamily:"var(--font-display)", fontSize:"1.8rem", fontWeight:900, color:"var(--gray-900)", marginBottom:12, lineHeight:1.2 }}>
-              {title}
-            </h1>
-
-            {avg_rating != null && (
-              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:16 }}>
-                <Stars rating={avg_rating} />
-                <span style={{ fontWeight:700, color:"#f59e0b" }}>{avg_rating.toFixed(1)}</span>
-                <span style={{ color:"var(--gray-400)", fontSize:"0.875rem" }}>({review_count} reviews)</span>
-              </div>
-            )}
-
-            {/* Instructor */}
-            <div className="instructor-card">
-              <div className="instructor-avatar">
-                {instructor_name?.[0]?.toUpperCase() || "I"}
-              </div>
-              <div>
-                <div className="instructor-name">{instructor_name}</div>
-                <div className="instructor-email">{instructor_email}</div>
-                {instructor_bio && (
-                  <div style={{ fontSize:"0.8rem", color:"var(--gray-600)", marginTop:4 }}>{instructor_bio}</div>
-                )}
-              </div>
-            </div>
-
-            {/* Description */}
-            <div style={{ marginBottom:32 }}>
-              <h2 style={{ fontSize:"1.1rem", fontWeight:700, marginBottom:12, color:"var(--gray-900)" }}>About This Workshop</h2>
-              <p style={{ color:"var(--gray-600)", lineHeight:1.8, whiteSpace:"pre-wrap" }}>
-                {description || "No description provided."}
-              </p>
-            </div>
-
-            {meet_link && mode === "online" && (
-              <div style={{ padding:"16px 20px", background:"var(--info-light)", borderRadius:"var(--radius-lg)", marginBottom:24, display:"flex", alignItems:"center", gap:10 }}>
-                <span style={{ fontSize:"1.2rem" }}>🔗</span>
-                <div>
-                  <div style={{ fontWeight:600, fontSize:"0.875rem", color:"var(--info)" }}>Meeting Link</div>
-                  <a href={meet_link} target="_blank" rel="noreferrer" style={{ fontSize:"0.8rem", color:"var(--info)" }}>{meet_link}</a>
+              {/* Rating Summary */}
+              {avg_rating != null && (
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}>
+                  <div className="flex gap-1" style={{ alignItems: "center" }}>
+                    {[1, 2, 3, 4, 5].map((starIdx) => (
+                      <Star
+                        key={starIdx}
+                        size={18}
+                        fill={starIdx <= Math.round(avg_rating) ? "#f59e0b" : "none"}
+                        color={starIdx <= Math.round(avg_rating) ? "#f59e0b" : "var(--gray-300)"}
+                        strokeWidth={1.8}
+                      />
+                    ))}
+                  </div>
+                  <span style={{ fontWeight: 800, color: "var(--gray-900)", fontSize: "1rem" }}>
+                    {Number(avg_rating).toFixed(1)}
+                  </span>
+                  <span style={{ color: "var(--gray-500)", fontSize: "0.875rem" }}>
+                    ({review_count} {review_count === 1 ? "review" : "reviews"})
+                  </span>
                 </div>
-              </div>
-            )}
+              )}
 
-            {/* Reviews Section */}
-            <div className="divider" />
-            <h2 style={{ fontSize:"1.1rem", fontWeight:700, marginBottom:20, color:"var(--gray-900)" }}>
-              Reviews {review_count > 0 && `(${review_count})`}
-            </h2>
-
-            {/* Leave a review */}
-            {user?.role === "student" && booked && (
-              <div style={{ background:"var(--gray-50)", borderRadius:"var(--radius-lg)", padding:20, marginBottom:24 }}>
-                <div style={{ fontWeight:700, marginBottom:12 }}>Leave a Review</div>
-                {revMsg.text && (
-                  <div className={`alert alert-${revMsg.type}`}>{revMsg.text}</div>
-                )}
-                {revMsg.type !== "success" && (
-                  <form onSubmit={handleReview}>
-                    <div style={{ marginBottom:12 }}>
-                      <StarPicker value={rating} onChange={setRating} />
+              {/* Instructor Profile Card */}
+              <div className="instructor-card">
+                <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+                  <div className="instructor-avatar">
+                    {instructor_name?.[0]?.toUpperCase() || "I"}
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: 700, fontSize: "1.05rem", color: "var(--gray-900)" }}>
+                      {instructor_name || "Community Instructor"}
                     </div>
-                    <textarea
-                      className="form-textarea"
-                      placeholder="Share your experience (optional)…"
-                      value={comment}
-                      onChange={(e) => setComment(e.target.value)}
-                      style={{ minHeight:80 }}
-                    />
-                    <button
-                      type="submit"
-                      className="btn btn-primary btn-sm"
-                      style={{ marginTop:10 }}
-                      disabled={revLoading}
-                    >
-                      {revLoading ? "Submitting…" : "Submit Review"}
-                    </button>
-                  </form>
-                )}
-              </div>
-            )}
-
-            {reviews.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-state-icon">💬</div>
-                <div className="empty-state-title">No reviews yet</div>
-                <div className="empty-state-desc">Be the first to review this workshop!</div>
-              </div>
-            ) : (
-              reviews.map((r) => (
-                <div key={r.id} className="review-item">
-                  <div className="review-header">
-                    <div className="review-avatar">
-                      {(r.student_name || r.reviewer_name || "?")[0].toUpperCase()}
+                    <div style={{ fontSize: "0.8125rem", color: "var(--gray-500)" }}>
+                      {instructor_email}
                     </div>
-                    <div>
-                      <div className="review-name">{r.student_name || r.reviewer_name}</div>
-                      <div className="review-date">
-                        {new Date(r.created_at).toLocaleDateString("en-IN", { year:"numeric", month:"short", day:"numeric" })}
+                    {instructor_bio && (
+                      <div style={{ fontSize: "0.85rem", color: "var(--gray-600)", marginTop: 6 }}>
+                        {instructor_bio}
                       </div>
-                    </div>
-                    <Stars rating={r.rating} />
+                    )}
                   </div>
-                  {r.comment && <div className="review-comment">{r.comment}</div>}
                 </div>
-              ))
-            )}
-          </div>
 
-          {/* ── Booking Card ─────────────────────────── */}
-          <div>
-            <div className="booking-card">
-              <div className="booking-price">
-                {isFree ? <span style={{ color:"var(--success)" }}>Free</span> : `₹${price}`}
-                <span> / person</span>
-              </div>
-
-              {bookMsg.text && (
-                <div className={`alert alert-${bookMsg.type}`}>{bookMsg.text}</div>
-              )}
-
-              {booked ? (
-                <div className="alert alert-success">✅ You're booked!</div>
-              ) : (
-                <button
-                  className="btn btn-primary btn-full btn-lg"
-                  onClick={handleBook}
-                  disabled={booking || isFull || status !== "published"}
-                >
-                  {booking ? "Booking…" : isFull ? "Fully Booked" : status !== "published" ? "Not Available" : "Book Now"}
-                </button>
-              )}
-
-              {!user && (
-                <p style={{ textAlign:"center", fontSize:"0.8rem", color:"var(--gray-500)", marginTop:10 }}>
-                  <Link to="/login" style={{ color:"var(--brand-primary)" }}>Log in</Link> to book this workshop
-                </p>
-              )}
-
-              <div className="booking-meta">
-                {schedule && (
-                  <div className="booking-meta-item">
-                    <span>📅</span>
-                    <div>
-                      <div style={{ fontSize:"0.75rem", color:"var(--gray-400)" }}>Schedule</div>
-                      <strong>{new Date(schedule).toLocaleDateString("en-IN", { weekday:"short", year:"numeric", month:"short", day:"numeric" })}</strong>
-                    </div>
-                  </div>
+                {user && instructor_id && user.id !== instructor_id && (
+                  <Link
+                    to={`/messages?userId=${instructor_id}`}
+                    className="btn btn-outline btn-sm flex gap-2"
+                  >
+                    <MessageSquare size={15} color="var(--brand-primary)" />
+                    Message Instructor
+                  </Link>
                 )}
-                <div className="booking-meta-item">
-                  <span>🪑</span>
-                  <div>
-                    <div style={{ fontSize:"0.75rem", color:"var(--gray-400)" }}>Seats</div>
-                    <strong style={{ color: remaining_seats <= 5 ? "var(--error)" : undefined }}>
-                      {remaining_seats} of {capacity} left
-                    </strong>
-                  </div>
-                </div>
-                <div className="booking-meta-item">
-                  <span>{mode==="online"?"🌐":"📍"}</span>
-                  <div>
-                    <div style={{ fontSize:"0.75rem", color:"var(--gray-400)" }}>Mode</div>
-                    <strong style={{ textTransform:"capitalize" }}>{mode}</strong>
-                  </div>
-                </div>
               </div>
+
+              {/* Description Section */}
+              <section style={{ marginBottom: 36, marginTop: 28 }}>
+                <h2 style={{ fontSize: "1.25rem", fontWeight: 800, marginBottom: 12, color: "var(--gray-900)" }}>
+                  About This Workshop
+                </h2>
+                <div
+                  style={{
+                    color: "var(--gray-700)",
+                    lineHeight: 1.8,
+                    whiteSpace: "pre-wrap",
+                    fontSize: "0.95rem",
+                  }}
+                >
+                  {description || "No description provided."}
+                </div>
+              </section>
+
+              {/* Meeting Link Notification for Registered Students */}
+              {meet_link && mode === "online" && (
+                <div
+                  style={{
+                    padding: "16px 20px",
+                    background: "var(--brand-primary-light)",
+                    border: "1px solid var(--brand-primary-border)",
+                    borderRadius: "var(--radius-lg)",
+                    marginBottom: 32,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 12,
+                  }}
+                >
+                  <Video size={22} color="var(--brand-primary)" />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 700, fontSize: "0.875rem", color: "var(--brand-primary)" }}>
+                      Live Stream Video Room
+                    </div>
+                    <a
+                      href={meet_link}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{
+                        fontSize: "0.85rem",
+                        color: "var(--brand-primary-hover)",
+                        textDecoration: "underline",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: 4,
+                      }}
+                    >
+                      {meet_link}
+                      <ExternalLink size={12} />
+                    </a>
+                  </div>
+                </div>
+              )}
 
               <div className="divider" />
-              <div style={{ fontSize:"0.8rem", color:"var(--gray-500)", display:"flex", flexDirection:"column", gap:6 }}>
-                <div>✅ Instant confirmation</div>
-                <div>🔄 Free cancellation anytime</div>
-                <div>📩 Booking details sent to email</div>
+
+              {/* ── Reviews Section ───────────────────── */}
+              <section>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                  <h2 style={{ fontSize: "1.25rem", fontWeight: 800, color: "var(--gray-900)" }}>
+                    Student Reviews {review_count > 0 && `(${review_count})`}
+                  </h2>
+                </div>
+
+                {/* Review Form for Enrolled Students */}
+                {user?.role === "student" && booked && (
+                  <div
+                    className="card"
+                    style={{
+                      background: "var(--brand-primary-subtle)",
+                      border: "1px solid var(--brand-primary-border)",
+                      marginBottom: 28,
+                    }}
+                  >
+                    <div className="card-body">
+                      <h3 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: 12, color: "var(--gray-900)" }}>
+                        Share Your Workshop Feedback
+                      </h3>
+
+                      {revMsg.text && (
+                        <div className={`alert alert-${revMsg.type}`}>{revMsg.text}</div>
+                      )}
+
+                      {revMsg.type !== "success" && (
+                        <form onSubmit={handleReview}>
+                          <div style={{ marginBottom: 14 }}>
+                            <label className="form-label">Your Rating</label>
+                            <StarPicker value={rating} onChange={setRating} />
+                          </div>
+                          <div className="form-group">
+                            <label className="form-label">Your Experience</label>
+                            <textarea
+                              className="form-textarea"
+                              placeholder="Write a few sentences on what you learned and how the instructor guided the session…"
+                              value={comment}
+                              onChange={(e) => setComment(e.target.value)}
+                              style={{ minHeight: 90 }}
+                            />
+                          </div>
+                          <button
+                            type="submit"
+                            className="btn btn-primary btn-sm"
+                            disabled={revLoading}
+                          >
+                            {revLoading ? "Submitting Review…" : "Publish Review"}
+                          </button>
+                        </form>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Reviews List */}
+                {reviews.length === 0 ? (
+                  <div className="empty-state">
+                    <div className="empty-state-icon">
+                      <Star size={24} />
+                    </div>
+                    <div className="empty-state-title">No reviews yet</div>
+                    <div className="empty-state-desc">
+                      Be among the first participants to attend and leave a review!
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    {reviews.map((r) => (
+                      <div key={r.id} className="review-item">
+                        <div className="review-header">
+                          <div className="review-avatar">
+                            {r.user_name?.[0]?.toUpperCase() || "S"}
+                          </div>
+                          <div>
+                            <div className="review-name">{r.user_name || "Student"}</div>
+                            <div className="review-date">
+                              {r.created_at ? new Date(r.created_at).toLocaleDateString() : ""}
+                            </div>
+                          </div>
+                          <div style={{ marginLeft: "auto", display: "flex", gap: 2 }}>
+                            {[1, 2, 3, 4, 5].map((st) => (
+                              <Star
+                                key={st}
+                                size={14}
+                                fill={st <= r.rating ? "#f59e0b" : "none"}
+                                color={st <= r.rating ? "#f59e0b" : "var(--gray-300)"}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                        {r.comment && <div className="review-comment">{r.comment}</div>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </section>
+            </main>
+
+            {/* ── Sticky Booking Sidebar ──────────────── */}
+            <aside>
+              <div className="booking-card">
+                <div className="booking-price">
+                  {isFree ? (
+                    <span style={{ color: "var(--success)", fontWeight: 800 }}>Free</span>
+                  ) : (
+                    <>
+                      ₹{Number(price).toLocaleString()}
+                      <span> / participant</span>
+                    </>
+                  )}
+                </div>
+
+                {bookMsg.text && (
+                  <div className={`alert alert-${bookMsg.type}`}>{bookMsg.text}</div>
+                )}
+
+                <div className="booking-meta">
+                  <div className="booking-meta-item">
+                    <Calendar size={18} color="var(--brand-primary)" />
+                    <div>
+                      <div>Schedule</div>
+                      <strong>{schedule ? new Date(schedule).toLocaleString() : "TBD by Instructor"}</strong>
+                    </div>
+                  </div>
+
+                  <div className="booking-meta-item">
+                    <Users size={18} color="var(--brand-primary)" />
+                    <div>
+                      <div>Capacity & Availability</div>
+                      <strong>
+                        {remaining_seats} of {capacity} seats remaining
+                      </strong>
+                    </div>
+                  </div>
+
+                  <div className="booking-meta-item">
+                    <ShieldCheck size={18} color="var(--brand-primary)" />
+                    <div>
+                      <div>Access Pass</div>
+                      <strong>Live interactive access + Q&A</strong>
+                    </div>
+                  </div>
+                </div>
+
+                {booked ? (
+                  <div
+                    style={{
+                      padding: 16,
+                      background: "var(--success-light)",
+                      border: "1px solid var(--success-border)",
+                      borderRadius: "var(--radius-md)",
+                      textAlign: "center",
+                      color: "var(--success-text)",
+                      fontWeight: 700,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      gap: 8,
+                    }}
+                  >
+                    <CheckCircle2 size={18} />
+                    You are enrolled in this workshop
+                  </div>
+                ) : isFull ? (
+                  <button className="btn btn-full btn-lg" disabled style={{ background: "var(--gray-200)", color: "var(--gray-500)" }}>
+                    Workshop is Sold Out
+                  </button>
+                ) : (
+                  <button
+                    className="btn btn-primary btn-full btn-lg"
+                    onClick={handleBook}
+                    disabled={booking}
+                  >
+                    {booking ? "Confirming Spot…" : isFree ? "Enroll Free Spot" : `Book Spot for ₹${Number(price).toLocaleString()}`}
+                  </button>
+                )}
+
+                <div style={{ textAlign: "center", fontSize: "0.78rem", color: "var(--gray-400)", marginTop: 14 }}>
+                  Instant seat confirmation with full workshop access.
+                </div>
               </div>
-            </div>
+            </aside>
           </div>
         </div>
       </div>
-    </div>
+      <Footer />
+    </>
   );
 }

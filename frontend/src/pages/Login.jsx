@@ -1,6 +1,15 @@
 // src/pages/Login.jsx
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import {
+  GraduationCap,
+  BookOpen,
+  Users,
+  Award,
+  Sparkles,
+  AlertCircle,
+  ArrowRight,
+} from "lucide-react";
 import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 
@@ -20,7 +29,7 @@ export default function Login() {
     e.preventDefault();
     setError("");
     if (!form.email || !form.password) {
-      setError("Please fill in all fields.");
+      setError("Please fill in both email and password.");
       return;
     }
     setLoading(true);
@@ -35,7 +44,7 @@ export default function Login() {
         navigate(role === "instructor" ? "/instructor" : "/student", { replace: true });
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Login failed. Please try again.");
+      setError(err.response?.data?.message || "Login failed. Please verify your credentials.");
     } finally {
       setLoading(false);
     }
@@ -45,35 +54,53 @@ export default function Login() {
     <div className="auth-page">
       {/* Left panel */}
       <div className="auth-left">
-        <h1 className="auth-left-title">
-          Welcome back to<br /><em>SkillSphere</em>
-        </h1>
-        <p className="auth-left-subtitle">
-          Continue your learning journey. Your next breakthrough is just one
-          workshop away.
-        </p>
-        <div className="auth-features">
-          {[
-            ["🎓", "Access 500+ expert-led workshops"],
-            ["📅", "Learn at your own pace, anytime"],
-            ["🏆", "Earn certificates for completed courses"],
-            ["🌐", "Join a global community of learners"],
-          ].map(([icon, text]) => (
-            <div key={text} className="auth-feature">
-              <div className="auth-feature-icon">{icon}</div>
-              <span>{text}</span>
+        <div style={{ maxWidth: 480 }}>
+          <div className="flex gap-2 mb-4" style={{ alignItems: "center" }}>
+            <div className="navbar-brand-mark">
+              <GraduationCap size={20} strokeWidth={2.2} />
             </div>
-          ))}
+            <span style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: "1.2rem", color: "#ffffff" }}>
+              SkillSphere
+            </span>
+          </div>
+
+          <h1 className="auth-left-title">
+            Welcome Back to<br /><em>Community Learning</em>
+          </h1>
+          <p className="auth-left-subtitle">
+            Sign in to access your workshops, active freelance contracts, team projects, and community chats.
+          </p>
+
+          <div className="auth-features">
+            {[
+              { icon: BookOpen, text: "Live interactive workshops with community experts" },
+              { icon: Users, text: "Freelance contracts and collaborative team finder" },
+              { icon: Award, text: "Verified reviews, portfolio showcases, and skill milestones" },
+              { icon: Sparkles, text: "Real-time direct and group messaging" },
+            ].map(({ icon: IconComp, text }) => (
+              <div key={text} className="auth-feature">
+                <div className="auth-feature-icon">
+                  <IconComp size={18} />
+                </div>
+                <span>{text}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Right panel */}
       <div className="auth-right">
         <div className="auth-card">
-          <h2 className="auth-title">Log In</h2>
-          <p className="auth-subtitle">Sign in to your SkillSphere account</p>
+          <h2 className="auth-title">Sign In</h2>
+          <p className="auth-subtitle">Enter your SkillSphere credentials to continue</p>
 
-          {error && <div className="alert alert-error">⚠️ {error}</div>}
+          {error && (
+            <div className="alert alert-error" style={{ marginBottom: 20 }}>
+              <AlertCircle size={16} />
+              <span>{error}</span>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit}>
             <div className="form-group">
@@ -85,8 +112,10 @@ export default function Login() {
                 value={form.email}
                 onChange={set("email")}
                 autoComplete="email"
+                required
               />
             </div>
+
             <div className="form-group">
               <label className="form-label">Password</label>
               <input
@@ -96,22 +125,35 @@ export default function Login() {
                 value={form.password}
                 onChange={set("password")}
                 autoComplete="current-password"
+                required
               />
             </div>
 
             <button
               type="submit"
-              className="btn btn-primary btn-full btn-lg"
+              className="btn btn-primary btn-full btn-lg flex gap-2"
               disabled={loading}
+              style={{ marginTop: 8 }}
             >
               {loading ? (
-                <><div className="spinner spinner-sm" style={{ borderTopColor: "#fff" }} /> Signing In…</>
-              ) : "Log In"}
+                <>
+                  <div className="spinner spinner-sm" style={{ borderTopColor: "#fff" }} />
+                  <span>Signing In…</span>
+                </>
+              ) : (
+                <>
+                  <span>Sign In</span>
+                  <ArrowRight size={16} />
+                </>
+              )}
             </button>
           </form>
 
           <p className="auth-footer-text">
-            Don't have an account? <Link to="/register">Sign up free</Link>
+            Don't have an account yet?{" "}
+            <Link to="/register" style={{ fontWeight: 600, color: "var(--brand-primary)" }}>
+              Sign up for free
+            </Link>
           </p>
         </div>
       </div>
